@@ -1,0 +1,7 @@
+desc "Build final fill_form_fields.js"
+task :build do
+  src = File.read(File.dirname(__FILE__) + "/fill_form_fields_src.js")
+  File.open(File.dirname(__FILE__) + "/fill_form_fields.js", "w") { |f| f << "javascript:#{src.gsub("\n", " ").gsub(/ +/, ' ')}" }
+end
+
+task :default => :build
