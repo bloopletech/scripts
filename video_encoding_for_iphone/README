@@ -1,0 +1,14 @@
+Convert video for the iPhone/iPod Touch
+=======================================
+
+This script will convert video for play on the iPhone/iPod Touch. To use the script, run:
+
+ ruby encode.rb <source movie filename>
+
+This will resize, reencode, and if the source movie has soft subtitles, convert them to hard subtitles.
+
+Then, connect the iPhone/iPod Touch, go to iTunes, make sure sync is turned on in the settings for the device, and drag the converted movie (it will be in the current directory with an m4v extension) onto the 'Movies' list for the device (located in the sidbar in iTunes). Sync the device. The movie will show up on the device.
+
+This script requires mplayer/mencoder to be installed; if you need assistance in installing mplayer, try the #mplayer IRC channel on freenode.
+
+If you encounter problems using the script, open up encode.rb; it has many useful comments. Also try running encode.rb with the --no-encode argument, and the script will print the raw command passed to mencoder; you can give this line to the people in the #mplayer IRC channel, and they may be able to help you.

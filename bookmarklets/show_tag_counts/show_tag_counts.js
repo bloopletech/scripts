@@ -1,0 +1,1 @@
+javascript:var n=document.getElementsByTagName('*');var o=[];for(var i=0;i<n.length;i++){var x=-1;for(var j=0;j<o.length;j++){if(o[j].m==n[i].nodeName) {x=j;break;}}if(x>0) {o[x].c++;}else{o.push({m:n[i].nodeName,c:1});}}o=o.sort(function(a,b){return(a.c<b.c)?1:(a.c>b.c?-1:0);});for(var i=0;i<o.length;i++){o[i]=o[i].m+": "+o[i].c;}alert(o.join("\n"));void(0);

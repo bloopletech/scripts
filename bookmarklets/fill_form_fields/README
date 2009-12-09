@@ -1,0 +1,13 @@
+Fill Form Fields
+================
+
+This script will:
+
+* Change the value of all text fields, password fields and textareas to 'testString', unless the name of the field contains:
+  * 'email', in which case the value of the field is changed to a random Mailinator address;
+  * 'date', in which case the value is changed to the current date in dd mmm yyyy format. 
+* Select the last option in every drop-down;
+* Check every checkbox on the page;
+* Select the last radio button in every radio button group.
+
+To run the script, just add a bookmark to your browser, setting the bookmark url to the contents of fill_form_fields.js (so the url should start with 'javascript:').
