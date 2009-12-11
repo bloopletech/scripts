@@ -8,7 +8,7 @@
       {
         inputs[i].checked = true;
       }
-      else if(/^text|password|$/.test(inputs[i].type))
+      else if(/^text|password$/.test(inputs[i].type) || inputs[i].tagName.toLowerCase() == 'textarea')
       {
         if(/email/i.test(inputs[i].name))
         {
