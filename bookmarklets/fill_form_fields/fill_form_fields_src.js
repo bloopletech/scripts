@@ -1,10 +1,14 @@
 (function()
 {
-  var handle_non_select_inputs = function(inputs)
+  var handle_inputs = function(inputs)
   {
     for(var i = 0; i < inputs.length; i++)
     {
-      if(/^radio|checkbox$/.test(inputs[i].type))
+      if(inputs[i].tagName.toLowerCase() == 'select')
+      {
+        inputs[i].selectedIndex = inputs[i].options.length - 1;
+      }
+      else if(/^radio|checkbox$/.test(inputs[i].type))
       {
         inputs[i].checked = true;
       }
@@ -20,26 +24,27 @@
         }
         else
         {
-          inputs[i].value = "testString";
+          inputs[i].value = "test";
         }
       }
     }
   };
-
-  handle_non_select_inputs(document.getElementsByTagName('input'));
-  handle_non_select_inputs(document.getElementsByTagName('textarea'));
-
-  var inputs = document.getElementsByTagName('select');
-  for(var i = 0; i < inputs.length; i++)
+  
+  function fill_window(w)
   {
-    var opts = inputs[i].options;
-    for(var j = 0; j < opts.length; j++)
+    handle_inputs(w.document.getElementsByTagName('input'));
+    handle_inputs(w.document.getElementsByTagName('textarea'));
+    handle_inputs(w.document.getElementsByTagName('select'));
+
+    if(w.frames.length > 0)
     {
-      if(opts[j].value != '')
+      for(var i = 0; i < w.frames.length; i++)
       {
-        inputs[i].selectedIndex = j;
+        fill_window(w.frames[i]);
       }
     }
   };
+  
+  fill_window(window.top);
 })();
 void(0);
