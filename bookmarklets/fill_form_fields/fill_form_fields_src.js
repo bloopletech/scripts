@@ -1,6 +1,6 @@
 (function()
 {
-  var handle_inputs = function(inputs)
+  function handle_inputs(inputs)
   {
     for(var i = 0; i < inputs.length; i++)
     {
@@ -32,9 +32,16 @@
   
   function fill_window(w)
   {
-    handle_inputs(w.document.getElementsByTagName('input'));
-    handle_inputs(w.document.getElementsByTagName('textarea'));
-    handle_inputs(w.document.getElementsByTagName('select'));
+    var w_document = (w.window || w.contentWindow).document;
+
+    handle_inputs(w_document.getElementsByTagName('input'));
+    handle_inputs(w_document.getElementsByTagName('textarea'));
+    handle_inputs(w_document.getElementsByTagName('select'));
+    
+    if(w_document.designMode == 'on' || w_document.body.contentEditable == 'true')
+    {
+      w_document.body.innerHTML = 'test';
+    }
 
     if(w.frames.length > 0)
     {

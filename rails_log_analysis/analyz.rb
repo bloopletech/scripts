@@ -8,6 +8,9 @@ class String
   end
 end
 
+ERROR_REGEXES = [/\(500 Internal Server Error\)$/m, /\(500 Internal Error|\)$/m, /\(404 Page Not Found\)$/m]
+
+
 print "Requests from which IP? [ip or nothing] "
 ip = $stdin.gets.chomp
 print "Consider requests going back to [date or nothing] "
@@ -46,7 +49,7 @@ while (line = file.gets) do
     
     body.rstrip!
 
-    next if show_errors_only && body !~ /ActionController::UnknownAction/m #body =~ /\(500 Internal Error|\)$/m or body =~ /\(404 Page Not Found\)$/m
+    next if show_errors_only && !ERROR_REGEXES.detect { |r| body =~ r }
 
     if (error_type.blank? && ignore_error_type.blank?) || (!error_type.blank? && body.include?(error_type)) ||
      (!ignore_error_type.blank? && !body.include?(ignore_error_type))
