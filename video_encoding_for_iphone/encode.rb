@@ -12,6 +12,7 @@ encode.rb <input filename> <options>
 
 Options are:
   --no-encode      Prints the encoding command, but doesn't run it
+  --ipod           Encodes for the ipod nano 5g instead of ipod touch.
 #  --more-keyframes Adds a keyframe every 3 seconds, instead of every 10 (approx.) seconds. Makes seeking better, but also makes file size larger.
 =end
 
@@ -21,11 +22,19 @@ class Float
   end
 end
 
-allowed_opts = %w(--no-encode --more-keyframes)
+allowed_opts = %w(--no-encode --more-keyframes --ipod)
 
 opts = ARGV & allowed_opts
 
 (ARGV - allowed_opts).each do |movie|
+  if ARGV.include?("--ipod")
+    max_output_width = 376
+    max_output_height = 240
+  else
+    max_output_width = 480
+    max_output_hieght = 320
+  end
+
   movie_path = File.expand_path(movie)
   escaped_movie_path = movie_path.gsub(/([ \[\]\(\)'"])/) { |r| "\\#{$1}" } #shell escape the input filename
 
@@ -47,14 +56,30 @@ opts = ARGV & allowed_opts
   then we get the width of the movie by multiplying the height by the aspect ratio; this avoids problems when the movie needs
   to be scaled horizontally before being displayed. If he aspect ratio is 0, then the reports height is used as the height of the input.
 =end  
-  reported_height = lines.detect { |l| l =~ /^ID_VIDEO_HEIGHT=/ }.split("=").last.to_i
+  height = lines.detect { |l| l =~ /^ID_VIDEO_HEIGHT=/ }.split("=").last.to_i
   reported_width = lines.detect { |l| l =~ /^ID_VIDEO_WIDTH=/ }.split("=").last.to_i
   aspect = lines.detect { |l| l =~ /^ID_VIDEO_ASPECT=/ }.split("=").last.to_f
-  width = aspect > 0 ? reported_height * aspect : reported_width
-  height = (reported_height / (width / 480.0)).round_nearest_even_integer
+  #puts "reported_height: #{height}, reported_width: #{reported_width}, aspect: #{aspect}"
+  
+  width = aspect > 0 ? height * aspect : reported_width
 
-  puts "Output width, height: 480, #{height}"
-  expand = -(320 - height)
+  #Resize
+  true_ratio = height / max_output_height.to_f
+  new_height = (height / true_ratio).round_nearest_even_integer
+  new_width = (width / true_ratio).round_nearest_even_integer
+  
+  if new_height > max_output_height || new_width > max_output_width
+    true_ratio = width / max_output_width.to_f
+    new_height = (height / true_ratio).round_nearest_even_integer
+    new_width = (width / true_ratio).round_nearest_even_integer
+  end
+  #End resize
+  
+  width = new_width
+  height = new_height
+
+  height_expand = -(240 - height)
+  width_expand = -(376 - width)
 
   subs = !!lines.detect { |l| l =~ /^ID_SUBTITLE_ID=/ }
 
@@ -77,7 +102,7 @@ opts = ARGV & allowed_opts
     I suspect they are a part of ensuring the audio is 'LC' or Low Complexity;
   * The br=128 option sets the audio bitrate to 128kb/s, which AFAIK makes sure the audio is LC;
   * -ovc x264 tells mencoder to encode the video as H.264;
-  * bframes=0,nocabac,global_header,no8x8dct are the options needed to make the video output H.264 Baseline, as opposed to H.264 Main etc.
+  * bframes=0,nocabac,global_header,no8x8dct,weightp=0 are the options needed to make the video output H.264 Baseline, as opposed to H.264 Main etc.
     Without these options, the video will not play on an iPod Touch/iPhone.
 
   subs_cmd controls the way the subtitles are converted from softsubs to hardsubs, if the input movie has softsubs. The options are as follows:
@@ -93,8 +118,8 @@ opts = ARGV & allowed_opts
   If the movie won't even copy or play at all on the device, outut_format_cmd is the first thing to change.
 =end
 
-  video_filter_cmd = "-vf scale=480:#{height},expand=0:#{expand}:#{subs ? '0:0' : ':'}:1,harddup -noskip -mc 0"
-  output_format_cmd = "-oac faac -faacopts mpeg=4:object=2:raw:br=128 -ovc x264 -x264encopts bframes=0:nocabac:global_header:no8x8dct"
+  video_filter_cmd = "-vf scale=#{width}:#{height},expand=#{width_expand}:#{height_expand}:#{subs ? '0:0' : ':'}:1,harddup -noskip -mc 0"
+  output_format_cmd = "-oac faac -faacopts mpeg=4:object=2:raw:br=128 -ovc x264 -x264encopts bframes=0:nocabac:global_header:no8x8dct:weightp=0"
   subs_cmd = subs ? '-subfont-autoscale 0 -subfont-text-scale 20 -subpos 99 -subfont-blur 2 -subfont-outline 1' : ''
   
   cmd = "mencoder -o #{output_filename} -of lavf #{video_filter_cmd} #{output_format_cmd} #{subs_cmd} '#{movie}' &2>1"
